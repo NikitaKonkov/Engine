@@ -44,10 +44,10 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo Build successful!
-
+cd ..
 REM Run the executable
 echo Running the application...
-Release\gameengine.exe
+build\Release\gameengine.exe
 
 echo Done!
 
