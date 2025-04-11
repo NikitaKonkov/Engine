@@ -122,9 +122,18 @@ if(MSVC) # If using the VS compiler...
 
 endif()
 
-#force remove unicode
-if (WIN32)
-	target_compile_options("${CMAKE_PROJECT_NAME}" PRIVATE /UUNICODE /U_UNICODE)
+# Handle Unicode flags properly based on compiler
+if (MSVC)
+    # Windows-style flags for MSVC
+    add_compile_options(/UUNICODE /U_UNICODE)
+else()
+    # Unix-style flags for GCC/Clang
+    add_compile_options(-DUNICODE=0 -D_UNICODE=0)
+endif()
+
+# Replace the WIN32 specific section with more specific MSVC check
+if (MSVC)
+    target_compile_options("${CMAKE_PROJECT_NAME}" PRIVATE /UUNICODE /U_UNICODE)
 endif()
 
 # Include directories for the project
