@@ -49,7 +49,7 @@ Use the provided shell script:
 
 1. Clone the repository
    ```
-   git clone [SDL-Vulkan-Game-Engine](https://github.com/NikitaKonkov/Game-Engine-CPP-SDL.git)
+   git clone https://github.com/NikitaKonkov/Game-Engine-CPP-SDL.git
    cd Game-Engine-CPP-SDL
    ```
 
