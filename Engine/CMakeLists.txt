@@ -6,11 +6,28 @@ cmake_minimum_required(VERSION 3.16)
 # Define USE_AVX512 option before project() to ensure it's recognized
 option(USE_AVX512 "Use AVX512 instructions if available (may not work on all machines)" OFF)
 
-# Set Vulkan SDK path
-set(VULKAN_SDK_PATH "C:/VulkanSDK/1.4.309.0")
-message(STATUS "Using Vulkan SDK at: ${VULKAN_SDK_PATH}")
+# Instead of hardcoding the Vulkan SDK path
+# set(VULKAN_SDK_PATH "C:/VulkanSDK/1.4.309.0")
 
-# Set explicit Vulkan paths before find_package
+# Use environment variable if available, otherwise fall back to a default location
+if(DEFINED ENV{VULKAN_SDK})
+    set(VULKAN_SDK_PATH $ENV{VULKAN_SDK})
+    message(STATUS "Using Vulkan SDK from environment: ${VULKAN_SDK_PATH}")
+else()
+    # Try to find the latest version by checking common installation directories
+    file(GLOB VULKAN_SDK_VERSIONS "C:/VulkanSDK/*" LIST_DIRECTORIES true)
+    if(VULKAN_SDK_VERSIONS)
+        list(SORT VULKAN_SDK_VERSIONS ORDER DESCENDING)
+        list(GET VULKAN_SDK_VERSIONS 0 VULKAN_SDK_PATH)
+        message(STATUS "Found Vulkan SDK automatically: ${VULKAN_SDK_PATH}")
+    else()
+        # Fall back to a default path if no installation found
+        set(VULKAN_SDK_PATH "C:/VulkanSDK/1.4.309.0")
+        message(WARNING "No Vulkan SDK found in environment or common locations, using default: ${VULKAN_SDK_PATH}")
+    endif()
+endif()
+
+# The rest of your existing Vulkan setup
 set(ENV{VULKAN_SDK} "${VULKAN_SDK_PATH}")
 set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/Include")
 set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/Lib/vulkan-1.lib")
