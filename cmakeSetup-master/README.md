@@ -4,23 +4,8 @@
 
 ## What is it?
 
-This is a CMake setup that loads glfw, OpenGL, stb_image, stb_truetype, and a custom 2d library. It works both on Windows and Linux.
+This is a CMake setup that loads glfw, OpenGL, stb_image, stb_truetype, sdl3, and a custom 2d library. It works both on Windows and Linux.
 
-## Why use cmakeSetup?
-
-All I do is configure the project in a good way. It is cross-platform, easy to add libraries, and the input and window opening are implemented. All the rest is up to you, with no weird abstractions, you get the init() update(), and close() functions and you do whatever you want with them.
-
-
-![](https://github.com/meemknight/photos/blob/master/cmakeSetup1.png)
----
-
-  [FULL EXAMPLE VIDEO!](https://www.youtube.com/watch?v=zJoXMfCI9LM)
-  
-  [LONGER VERSION!!](https://www.youtube.com/watch?v=XOs2qynEmNE)
-  
-  [VIDEO ABOUT THE SETUP](https://www.youtube.com/watch?v=K8f73k9HM8M)
-
----
 
 <p>Opening the Solution:</p> 
 
@@ -55,7 +40,6 @@ After you add a file, the changes should be automatically added but if you want 
   Look at the example provided to see how to acces user input.
   Also you have to use the RESOURCES_PATH macro to get to your assets path.
 
-  [FULL EXAMPLE VIDEO!](https://www.youtube.com/watch?v=zJoXMfCI9LM)
 
 
 # IMPORTANT!
