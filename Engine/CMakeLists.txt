@@ -6,6 +6,10 @@ cmake_minimum_required(VERSION 3.16)
 # Define USE_AVX512 option before project() to ensure it's recognized
 option(USE_AVX512 "Use AVX512 instructions if available (may not work on all machines)" OFF)
 
+# Add a clear message about AVX options - more detailed for debugging
+message(STATUS "==== CPU Instruction Set Configuration ====")
+message(STATUS "USE_AVX512 option is set to: ${USE_AVX512}")
+
 # Set CMake policies to handle deprecation warnings
 if(POLICY CMP0115)
   cmake_policy(SET CMP0115 NEW)  # Require explicit file extensions for sources
@@ -48,64 +52,43 @@ endif()
 
 
 if(MSVC)
-    # Default to AVX2 which has better compatibility
+    # Add CPU optimization options for MSVC compiler
     if(USE_AVX512)
         message(STATUS "Building with AVX512 support - this requires compatible CPU hardware")
-        # Apply directly to target instead of using directory-level options
-        set(AVX_FLAGS "/arch:AVX512")
+        add_compile_options(/arch:AVX512)
     else()
         message(STATUS "Building with AVX2 support for better compatibility")
-        set(AVX_FLAGS "/arch:AVX2")
+        add_compile_options(/arch:AVX2)
     endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Add CPU optimization options for GCC/Clang compilers
-    
     if(USE_AVX512)
         message(STATUS "Building with AVX512 support - this requires compatible CPU hardware")
-        set(AVX_FLAGS "-mavx512f -mavx512vl -mavx512bw -mavx512dq")
+        set(AVX_FLAGS -mavx512f -mavx512vl -mavx512bw -mavx512dq)
     else()
         message(STATUS "Building with AVX2 support for better compatibility")
-        set(AVX_FLAGS "-mavx2")
+        set(AVX_FLAGS -mavx2 -mfma -mavx -msse4.2)
     endif()
 endif()
 
 
 project(gameengine)
 
-
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+# Only building with SDL3, removed GLFW settings
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 # Add the path to the thirdparty libraries
-add_subdirectory(thirdparty/sdl3-3.2.10)		#window oppener
-# The following libraries are commented out since we're only using SDL3
-# add_subdirectory(thirdparty/glfw-3.3.2)			#window oppener
-# add_subdirectory(thirdparty/glad)				#opengl loader
-# add_subdirectory(thirdparty/stb_image)			#loading immaged
-# add_subdirectory(thirdparty/stb_truetype)		#loading ttf files
-# #add_subdirectory(thirdparty/enet-1.3.17)		#networking
-# add_subdirectory(thirdparty/raudio)				#audio
-# add_subdirectory(thirdparty/glm)				#math
-# add_subdirectory(thirdparty/imgui-docking)		#ui
-# #----------V-----------------------V------------#my libraries												
-# add_subdirectory(thirdparty/safeSave)			#saving data, designed for gamedev. It also makes backups so the player won't loose saves.
-# add_subdirectory(thirdparty/profilerLib)		#profiling, just a simpe library for measuring elapsed time
-# add_subdirectory(thirdparty/gl2d)				#2D rendering library
-# add_subdirectory(thirdparty/glui)				#ui library, usefull for making game menus
+add_subdirectory(thirdparty/sdl3-3.2.10)		# SDL3
+
 
 
 # MY_SOURCES is defined to be a list of all the source files for my game 
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-
 add_executable("${CMAKE_PROJECT_NAME}")
 
 set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY CXX_STANDARD 17)
-
 
 
 if(PRODUCTION_BUILD)
@@ -123,7 +106,6 @@ else()
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC DEVELOPLEMT_BUILD=1) 
 
 endif()
-
 
 
 target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES} )
@@ -145,11 +127,9 @@ if (WIN32)
 	target_compile_options("${CMAKE_PROJECT_NAME}" PRIVATE /UUNICODE /U_UNICODE)
 endif()
 
-
+# Include directories for the project
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/headers/")
-# target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/gameLayer/")
-# target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/platform/")
 
 
 # Link with SDL3 only since that's what we're using
