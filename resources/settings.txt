@@ -1,6 +1,6 @@
 # Game Engine Settings
-screenWidth = 1024
-screenHeight = 768
+screenWidth = 800
+screenHeight = 640
 fullscreen = false
 vsync = true
 maxFPS = 120

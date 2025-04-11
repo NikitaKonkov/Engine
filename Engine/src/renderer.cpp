@@ -16,11 +16,11 @@ int main(int argc, char *argv[])
     }
     
     // Early in your initialization
-    bool settingsLoaded = g_settings.loadFromFile(std::string(RESOURCES_PATH) + "settings.txt");
+    bool settingsLoaded = g_settings.loadFromFile(std::string("resources/settings.txt"));
     if (!settingsLoaded) {
         // If loading failed, use defaults and save them
         g_settings = getDefaultSettings();
-        g_settings.saveToFile(RESOURCES_PATH + std::string("settings.txt"));
+        g_settings.saveToFile(std::string("resources/settings.txt"));
     }
 
     // Now you can use g_settings throughout your application
