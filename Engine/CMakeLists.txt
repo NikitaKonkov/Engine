@@ -8,6 +8,19 @@ if(POLICY CMP0115)
   cmake_policy(SET CMP0115 NEW)  # Require explicit file extensions for sources
 endif()
 
+# Get system core count and use half for build
+include(ProcessorCount)
+ProcessorCount(N)
+if(N EQUAL 0)
+  set(N 1)
+endif()
+math(EXPR N_HALF "${N} / 2")
+if(N_HALF LESS 1)
+  set(N_HALF 1)
+endif()
+set(CMAKE_BUILD_PARALLEL_LEVEL ${N_HALF} CACHE STRING "Set build parallelism to half available cores" FORCE)
+message(STATUS "Building with ${N_HALF} parallel jobs (half of ${N} detected cores)")
+
 set(CMAKE_CXX_STANDARD 17)
 #! ! ! ! ! ! !
 #! ! ! ! ! ! !
