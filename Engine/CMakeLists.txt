@@ -3,6 +3,9 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+# Define USE_AVX512 option before project() to ensure it's recognized
+option(USE_AVX512 "Use AVX512 instructions if available (may not work on all machines)" OFF)
+
 # Set CMake policies to handle deprecation warnings
 if(POLICY CMP0115)
   cmake_policy(SET CMP0115 NEW)  # Require explicit file extensions for sources
@@ -44,11 +47,30 @@ endif()
 
 
 
-if(MSVC) 
-add_compile_options(/arch:AVX2) #make sure SIMD optimizations take place
+if(MSVC)
+    # Default to AVX2 which has better compatibility
+    if(USE_AVX512)
+        message(STATUS "Building with AVX512 support - this requires compatible CPU hardware")
+        # Apply directly to target instead of using directory-level options
+        set(AVX_FLAGS "/arch:AVX512")
+    else()
+        message(STATUS "Building with AVX2 support for better compatibility")
+        set(AVX_FLAGS "/arch:AVX2")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Add CPU optimization options for GCC/Clang compilers
+    
+    if(USE_AVX512)
+        message(STATUS "Building with AVX512 support - this requires compatible CPU hardware")
+        set(AVX_FLAGS "-mavx512f -mavx512vl -mavx512bw -mavx512dq")
+    else()
+        message(STATUS "Building with AVX2 support for better compatibility")
+        set(AVX_FLAGS "-mavx2")
+    endif()
 endif()
 
-project(mygame)
+
+project(gameengine)
 
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -132,3 +154,6 @@ target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURC
 
 # Link with SDL3 only since that's what we're using
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL3::SDL3)
+
+# Apply the AVX flags directly to the target
+target_compile_options("${CMAKE_PROJECT_NAME}" PRIVATE ${AVX_FLAGS})
