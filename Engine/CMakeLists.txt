@@ -6,6 +6,15 @@ cmake_minimum_required(VERSION 3.16)
 # Define USE_AVX512 option before project() to ensure it's recognized
 option(USE_AVX512 "Use AVX512 instructions if available (may not work on all machines)" OFF)
 
+# Set Vulkan SDK path
+set(VULKAN_SDK_PATH "C:/VulkanSDK/1.4.309.0")
+message(STATUS "Using Vulkan SDK at: ${VULKAN_SDK_PATH}")
+
+# Set explicit Vulkan paths before find_package
+set(ENV{VULKAN_SDK} "${VULKAN_SDK_PATH}")
+set(Vulkan_INCLUDE_DIR "${VULKAN_SDK_PATH}/Include")
+set(Vulkan_LIBRARY "${VULKAN_SDK_PATH}/Lib/vulkan-1.lib")
+
 # Add a clear message about AVX options - more detailed for debugging
 message(STATUS "==== CPU Instruction Set Configuration ====")
 message(STATUS "USE_AVX512 option is set to: ${USE_AVX512}")
@@ -80,7 +89,19 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 # Add the path to the thirdparty libraries
 add_subdirectory(thirdparty/sdl3-3.2.10)		# SDL3
 
+# Try to find Vulkan with our explicit paths first
+find_package(Vulkan REQUIRED)
 
+# If find_package failed, set up Vulkan manually
+if(NOT Vulkan_FOUND)
+    message(STATUS "Manual Vulkan configuration...")
+    set(Vulkan_FOUND TRUE)
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include")
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib/vulkan-1.lib")
+endif()
+
+message(STATUS "Vulkan_INCLUDE_DIRS: ${Vulkan_INCLUDE_DIRS}")
+message(STATUS "Vulkan_LIBRARIES: ${Vulkan_LIBRARIES}")
 
 # MY_SOURCES is defined to be a list of all the source files for my game 
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
@@ -93,7 +114,7 @@ set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY CXX_STANDARD 17)
 
 if(PRODUCTION_BUILD)
 	# setup the ASSETS_PATH macro to be in the root folder of your exe
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/") 
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="/resources/") 
 
 	# remove the option to debug asserts.
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1) 
@@ -139,10 +160,10 @@ endif()
 # Include directories for the project
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/headers/")
+target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${Vulkan_INCLUDE_DIRS}")
 
-
-# Link with SDL3 only since that's what we're using
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL3::SDL3)
+# Link with SDL3 and Vulkan
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE SDL3::SDL3 ${Vulkan_LIBRARIES})
 
 # Apply the AVX flags directly to the target
 target_compile_options("${CMAKE_PROJECT_NAME}" PRIVATE ${AVX_FLAGS})

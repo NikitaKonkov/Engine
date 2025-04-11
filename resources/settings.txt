@@ -1,0 +1,7 @@
+# Game Engine Settings
+screenWidth = 1024
+screenHeight = 768
+fullscreen = false
+vsync = true
+maxFPS = 120
+audioVolume = 80
