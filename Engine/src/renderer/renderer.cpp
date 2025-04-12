@@ -9,21 +9,38 @@
 #include <stdexcept>
 #include <iostream>
 
-// Minimal shader code for a single pixel
+// Minimal shader code for a simple triangle
 const std::string vertShaderCode = R"(
 #version 450
+layout(location = 0) out vec3 fragColor;
+
+// Hard-coded triangle vertices
+vec2 positions[3] = vec2[](
+    vec2(0.0, -0.5),
+    vec2(0.5, 0.5),
+    vec2(-0.5, 0.5)
+);
+
+// Colorful vertices
+vec3 colors[3] = vec3[](
+    vec3(1.0, 0.0, 0.0),  // Red
+    vec3(0.0, 1.0, 0.0),  // Green
+    vec3(0.0, 0.0, 1.0)   // Blue
+);
+
 void main() {
-    // Just draw a single point at the center
-    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-    gl_PointSize = 10.0; // Size of the point in pixels
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    fragColor = colors[gl_VertexIndex];
 }
 )";
 
 const std::string fragShaderCode = R"(
 #version 450
+layout(location = 0) in vec3 fragColor;
 layout(location = 0) out vec4 outColor;
+
 void main() {
-    outColor = vec4(1.0, 0.0, 0.0, 1.0); // Red pixel
+    outColor = vec4(fragColor, 1.0);
 }
 )";
 
@@ -296,7 +313,7 @@ int main(int argc, char *argv[]) {
         // Input assembly (point list for a single pixel)
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         
         // Viewport and scissor
         VkViewport viewport{};
@@ -443,7 +460,7 @@ int main(int argc, char *argv[]) {
             
             vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-            vkCmdDraw(commandBuffer, 1, 1, 0, 0); // Draw a single vertex (point)
+            vkCmdDraw(commandBuffer, 3, 1, 0, 0); // Draw a triangle
             vkCmdEndRenderPass(commandBuffer);
             
             if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
