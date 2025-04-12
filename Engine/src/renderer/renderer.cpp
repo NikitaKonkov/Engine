@@ -8,41 +8,58 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
+#include <string>
 
-// Minimal shader code for a simple triangle
-const std::string vertShaderCode = R"(
-#version 450
-layout(location = 0) out vec3 fragColor;
-
-// Hard-coded triangle vertices
-vec2 positions[3] = vec2[](
-    vec2(0.0, -0.5),
-    vec2(0.5, 0.5),
-    vec2(-0.5, 0.5)
-);
-
-// Colorful vertices
-vec3 colors[3] = vec3[](
-    vec3(1.0, 0.0, 0.0),  // Red
-    vec3(0.0, 1.0, 0.0),  // Green
-    vec3(0.0, 0.0, 1.0)   // Blue
-);
-
-void main() {
-    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
-    fragColor = colors[gl_VertexIndex];
+// Load shader code from file
+std::string loadShaderFile(const std::string& filename) {
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+    
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open shader file: " + filename);
+    }
+    
+    size_t fileSize = static_cast<size_t>(file.tellg());
+    std::string buffer(fileSize, ' ');
+    
+    file.seekg(0);
+    file.read(&buffer[0], fileSize);
+    
+    file.close();
+    return buffer;
 }
-)";
 
-const std::string fragShaderCode = R"(
-#version 450
-layout(location = 0) in vec3 fragColor;
-layout(location = 0) out vec4 outColor;
-
-void main() {
-    outColor = vec4(fragColor, 1.0);
+// Parse combined shader file (.shader) to get vertex and fragment parts
+std::pair<std::string, std::string> parseCombinedShader(const std::string& filename) {
+    std::string combinedCode = loadShaderFile(filename);
+    
+    // Look for markers that separate vertex and fragment shaders
+    const std::string vertexMarker = "#shader vertex";
+    const std::string fragmentMarker = "#shader fragment";
+    
+    size_t vertexPos = combinedCode.find(vertexMarker);
+    size_t fragmentPos = combinedCode.find(fragmentMarker);
+    
+    if (vertexPos == std::string::npos || fragmentPos == std::string::npos) {
+        throw std::runtime_error("Invalid shader format in: " + filename);
+    }
+    
+    // Extract vertex shader (after vertex marker, before fragment marker)
+    std::string vertexCode;
+    if (vertexPos < fragmentPos) {
+        vertexPos += vertexMarker.length();
+        vertexCode = combinedCode.substr(vertexPos, fragmentPos - vertexPos);
+    } else {
+        vertexPos += vertexMarker.length();
+        vertexCode = combinedCode.substr(vertexPos);
+    }
+    
+    // Extract fragment shader (after fragment marker)
+    fragmentPos += fragmentMarker.length();
+    std::string fragmentCode = combinedCode.substr(fragmentPos);
+    
+    return {vertexCode, fragmentCode};
 }
-)";
 
 // Create Vulkan instance with required extensions for SDL
 VkInstance createInstance() {
@@ -105,7 +122,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Create window with Vulkan support
-    SDL_Window* window = SDL_CreateWindow("Vulkan Pixel Example", 
+    SDL_Window* window = SDL_CreateWindow("Vulkan Triangle Example", 
                          g_settings.screenWidth, g_settings.screenHeight, 
                          SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
     
@@ -287,9 +304,13 @@ int main(int argc, char *argv[]) {
             }
         }
         
+        // Load shader from combined .shader file
+        std::string shaderPath = "resources/shaders/triangle.shader";
+        auto [vertexShaderCode, fragmentShaderCode] = parseCombinedShader(shaderPath);
+        
         // Create shader modules
-        VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode);
-        VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode);
+        VkShaderModule vertShaderModule = createShaderModule(device, vertexShaderCode);
+        VkShaderModule fragShaderModule = createShaderModule(device, fragmentShaderCode);
         
         // Setup minimal pipeline
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
