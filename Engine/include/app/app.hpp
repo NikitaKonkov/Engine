@@ -5,24 +5,24 @@
 #include <memory>
 #include <renderer/renderer.hpp>
 
-class Application {
+class App {
 public:
-    // Constructor with application title and window dimensions
-    Application(const std::string& title, int width, int height);
+    // Constructor with App title and window dimensions
+    App(const std::string& title, int width, int height);
     
     // Destructor for cleanup
-    ~Application();
+    ~App();
     
-    // Initialize the application
+    // Initialize the App
     bool initialize();
     
-    // Run the application main loop
+    // Run the App main loop
     void run();
     
     // Process input events
     void processEvents();
     
-    // Update application state
+    // Update App state
     void update();
     
     // Render the current frame
@@ -40,6 +40,6 @@ private:
     // Renderer instance
     std::unique_ptr<Renderer> renderer;
     
-    // Application state
+    // App state
     bool running;
 };

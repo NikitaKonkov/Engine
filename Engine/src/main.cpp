@@ -1,11 +1,11 @@
-#include "application/application.hpp"
-#include "settings/settings.hpp"
+#include <app/app.hpp>
+#include <settings/settings.hpp>
 #include <iostream>
 
 int main(int argc, char* argv[]) {
     try {
         // Create application with settings from global config
-        Application app("Vulkan SDL Game Engine", 
+        App app("Vulkan SDL Game Engine", 
                        g_settings.screenWidth, 
                        g_settings.screenHeight);
         

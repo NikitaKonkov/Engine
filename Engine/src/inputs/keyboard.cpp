@@ -104,6 +104,7 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
 void KeyboardManager::update() {
     for (auto& [key, state] : keyStates) {
         if (state == KeyState::JUST_PRESSED) {
+            SDL_Log("Key %s JUST_PRESSED", keycodeToString(key).c_str());
             state = KeyState::PRESSED;
         } 
         else if (state == KeyState::JUST_RELEASED) {
@@ -112,6 +113,7 @@ void KeyboardManager::update() {
         
         // Handle hold callbacks
         if (state == KeyState::PRESSED) {
+            SDL_Log("Key %s PRESSED", keycodeToString(key).c_str());
             for (auto& [name, mapping] : actionMappings) {
                 if ((mapping.primaryKey == key || mapping.alternateKey == key) && mapping.holdCallback) {
                     mapping.holdCallback();
@@ -329,4 +331,4 @@ std::string KeyboardManager::keycodeToString(SDL_Keycode keycode) {
     }
 }
 
-} // namespace Engine
+} // namespace Keyboard

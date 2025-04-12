@@ -1,14 +1,14 @@
-#include "application.hpp"
+#include <app/app.hpp>
 #include <Inputs/keyboard.hpp>
 #include <settings/settings.hpp>
 #include <stdexcept>
 #include <iostream>
 
-Application::Application(const std::string& title, int width, int height)
+App::App(const std::string& title, int width, int height)
     : title(title), width(width), height(height), window(nullptr), running(false) {
 }
 
-Application::~Application() {
+App::~App() {
     // Renderer is automatically cleaned up by the unique_ptr
     
     // Clean up SDL resources
@@ -19,7 +19,7 @@ Application::~Application() {
     SDL_Quit();
 }
 
-bool Application::initialize() {
+bool App::initialize() {
     // Initialize SDL
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
@@ -47,7 +47,7 @@ bool Application::initialize() {
     return true;
 }
 
-void Application::run() {
+void App::run() {
     while (running) {
         processEvents();
         update();
@@ -55,7 +55,7 @@ void Application::run() {
     }
 }
 
-void Application::processEvents() {
+void App::processEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
@@ -73,7 +73,7 @@ void Application::processEvents() {
     }
 }
 
-void Application::update() {
+void App::update() {
     // Update input state
     Keyboard::Input.update();
     
@@ -81,7 +81,7 @@ void Application::update() {
     // This is where you would update game state, physics, etc.
 }
 
-void Application::render() {
+void App::render() {
     // Let the renderer draw the current frame
     renderer->drawFrame();
 }
