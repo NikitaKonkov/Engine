@@ -27,7 +27,7 @@ A modern C++ game engine built with SDL3 and Vulkan, providing a flexible founda
 
 ### Quick Build Instructions
 
-#### Windows
+#### Windows CMD
 Use the provided batch script:
 ```
 build.bat                 # Build with AVX2 (default)
@@ -36,7 +36,7 @@ build.bat --clean         # Clean build with AVX2
 build.bat --clean --avx512  # Clean build with AVX512
 ```
 
-#### Linux/macOS
+#### Linux <- Dont work right now :)
 Use the provided shell script:
 ```
 ./build.sh                # Build with AVX2 (default)

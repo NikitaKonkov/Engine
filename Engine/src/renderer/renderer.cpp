@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Create window with Vulkan support
-    SDL_Window* window = SDL_CreateWindow("Vulkan Triangle Example", 
+    SDL_Window* window = SDL_CreateWindow("Vulkan SDL Game Engine", 
                          g_settings.screenWidth, g_settings.screenHeight, 
                          SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
     
