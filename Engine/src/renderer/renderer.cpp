@@ -4,7 +4,6 @@
 #include <settings/settings.hpp>
 #include <Inputs/keyboard.hpp>
 
-
 const std::string GRAPHICS_CONFIG_FILE = "resources/video_settings.txt";
 const std::string KEYBOARD_CONFIG_FILE = "resources/keyboard_config.txt";
 int main(int argc, char *argv[])
@@ -24,21 +23,21 @@ int main(int argc, char *argv[])
     
 
 
-    // Configure keyboard actions
-    if (!Keyboard::Input.loadConfiguration(KEYBOARD_CONFIG_FILE)) {
-        // Generate default keyboard config
-        Keyboard::Input.mapAction("MOVE_FORWARD", SDLK_W, SDLK_UP);
-        Keyboard::Input.mapAction("MOVE_BACKWARD", SDLK_S, SDLK_DOWN);
-        Keyboard::Input.mapAction("MOVE_LEFT", SDLK_A, SDLK_LEFT);
-        Keyboard::Input.mapAction("MOVE_RIGHT", SDLK_D, SDLK_RIGHT);
-        Keyboard::Input.mapAction("JUMP", SDLK_SPACE);
-        Keyboard::Input.mapAction("CROUCH", SDLK_LCTRL);
-        Keyboard::Input.mapAction("RELOAD_SETTINGS", SDLK_F5);
-        Keyboard::Input.saveConfiguration();
-    }
+    // // Configure keyboard actions
+    // if (!Keyboard::Input.loadConfiguration(KEYBOARD_CONFIG_FILE)) {
+    //     // Generate default keyboard config
+    //     Keyboard::Input.mapAction("MOVE_FORWARD", SDLK_W, SDLK_UP);
+    //     Keyboard::Input.mapAction("MOVE_BACKWARD", SDLK_S, SDLK_DOWN);
+    //     Keyboard::Input.mapAction("MOVE_LEFT", SDLK_A, SDLK_LEFT);
+    //     Keyboard::Input.mapAction("MOVE_RIGHT", SDLK_D, SDLK_RIGHT);
+    //     Keyboard::Input.mapAction("JUMP", SDLK_SPACE);
+    //     Keyboard::Input.mapAction("CROUCH", SDLK_LCTRL);
+    //     Keyboard::Input.mapAction("RELOAD_SETTINGS", SDLK_F5);
+    //     Keyboard::Input.saveConfiguration();
+    // }
 
 
-    // Now you can use g_settings throughout your application
+    // Load preferences
     window = SDL_CreateWindow("Game Keyboard", 
                              g_settings.screenWidth, 
                              g_settings.screenHeight, 
@@ -54,6 +53,7 @@ int main(int argc, char *argv[])
         // Handle events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
+                SDL_Log("Quit event received, exiting...");
                 running = false;
             }
             
