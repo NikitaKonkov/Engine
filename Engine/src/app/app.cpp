@@ -52,6 +52,7 @@ void App::run() {
         processEvents();
         update();
         render();
+        
     }
 }
 

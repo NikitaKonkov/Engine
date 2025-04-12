@@ -1,7 +1,8 @@
 #include <inputs/keyboard.hpp>
 #include <algorithm>
 #include <iostream>
-
+#include <fstream>
+#include <audio/audio.hpp>
 namespace Keyboard {
 
 KeyboardManager Input;
@@ -104,7 +105,12 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
 void KeyboardManager::update() {
     for (auto& [key, state] : keyStates) {
         if (state == KeyState::JUST_PRESSED) {
+    
+            // Play a simple sound for 2 seconds
+            PlaySimpleSound();
+        
             SDL_Log("Key %s JUST_PRESSED", keycodeToString(key).c_str());
+            
             state = KeyState::PRESSED;
         } 
         else if (state == KeyState::JUST_RELEASED) {

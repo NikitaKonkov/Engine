@@ -1,8 +1,11 @@
 #include <app/app.hpp>
 #include <settings/settings.hpp>
 #include <iostream>
+#include <audio/audio.hpp>
 
 int main(int argc, char* argv[]) {
+
+
     try {
         // Create application with settings from global config
         App app("Vulkan SDL Game Engine", 
@@ -23,4 +26,6 @@ int main(int argc, char* argv[]) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
+    
+    return 0;
 }
