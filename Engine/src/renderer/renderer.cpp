@@ -2,7 +2,7 @@
 #include <SDL3/SDL_vulkan.h>
 #include <SDL3/SDL_events.h>
 #include <settings/settings.hpp>
-#include <inputs/keyboard.hpp>
+#include <Inputs/keyboard.hpp>
 
 
 const std::string SETTINGS_FILE = "resources/settings.txt";
@@ -26,20 +26,20 @@ int main(int argc, char *argv[])
     }
 
     // Configure keyboard actions
-    if (!Engine::g_keyboard.loadConfiguration("resources/keyboard_config.txt")) {
+    if (!Keyboard::Input.loadConfiguration("resources/keyboard_config.txt")) {
         // Generate default keyboard config
-        Engine::g_keyboard.mapAction("MOVE_FORWARD", SDLK_W, SDLK_UP);
-        Engine::g_keyboard.mapAction("MOVE_BACKWARD", SDLK_S, SDLK_DOWN);
-        Engine::g_keyboard.mapAction("MOVE_LEFT", SDLK_A, SDLK_LEFT);
-        Engine::g_keyboard.mapAction("MOVE_RIGHT", SDLK_D, SDLK_RIGHT);
-        Engine::g_keyboard.mapAction("JUMP", SDLK_SPACE);
-        Engine::g_keyboard.mapAction("CROUCH", SDLK_LCTRL);
-        Engine::g_keyboard.mapAction("RELOAD_SETTINGS", SDLK_F5);
-        Engine::g_keyboard.saveConfiguration();
+        Keyboard::Input.mapAction("MOVE_FORWARD", SDLK_W, SDLK_UP);
+        Keyboard::Input.mapAction("MOVE_BACKWARD", SDLK_S, SDLK_DOWN);
+        Keyboard::Input.mapAction("MOVE_LEFT", SDLK_A, SDLK_LEFT);
+        Keyboard::Input.mapAction("MOVE_RIGHT", SDLK_D, SDLK_RIGHT);
+        Keyboard::Input.mapAction("JUMP", SDLK_SPACE);
+        Keyboard::Input.mapAction("CROUCH", SDLK_LCTRL);
+        Keyboard::Input.mapAction("RELOAD_SETTINGS", SDLK_F5);
+        Keyboard::Input.saveConfiguration();
     }
 
     // Register callbacks for some actions
-    Engine::g_keyboard.registerActionCallback("RELOAD_SETTINGS", 
+    Keyboard::Input.registerActionCallback("RELOAD_SETTINGS", 
         []() { // Press callback
             if (g_settings.loadFromFile(SETTINGS_FILE)) {
                 SDL_Log("Settings refreshed");
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     );
 
     // Now you can use g_settings throughout your application
-    window = SDL_CreateWindow("Game Engine", 
+    window = SDL_CreateWindow("Game Keyboard", 
                              g_settings.screenWidth, 
                              g_settings.screenHeight, 
                              SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
@@ -67,19 +67,19 @@ int main(int argc, char *argv[])
             }
             
             // Pass events to keyboard manager
-            Engine::g_keyboard.handleEvent(event);
+            Keyboard::Input.handleEvent(event);
         }
         
         // Update keyboard states
-        Engine::g_keyboard.update();
+        Keyboard::Input.update();
         
         // Example of checking action states
-        if (Engine::g_keyboard.isActionPressed("MOVE_FORWARD")) {
+        if (Keyboard::Input.isActionPressed("MOVE_FORWARD")) {
             // Move character forward
             SDL_Log("Moving forward");
         }
         // Example of checking action states
-        if (Engine::g_keyboard.isActionPressed("MOVE_BACKWARD")) {
+        if (Keyboard::Input.isActionPressed("MOVE_BACKWARD")) {
             // Move character forward
             SDL_Log("Moving backward");
         }
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         // Rendering code would go here
         
         // Window resizing example
-        if (Engine::g_keyboard.isActionJustPressed("RELOAD_SETTINGS")) {
+        if (Keyboard::Input.isActionJustPressed("RELOAD_SETTINGS")) {
             SDL_SetWindowSize(window, g_settings.screenWidth, g_settings.screenHeight);
         }
     }

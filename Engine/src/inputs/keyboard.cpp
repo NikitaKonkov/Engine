@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <iostream>
 
-namespace Engine {
+namespace Keyboard {
 
-KeyboardManager g_keyboard;
+KeyboardManager Input;
 
 KeyboardManager::KeyboardManager(const std::string& configFile) : configFilePath(configFile) {
     loadConfiguration(configFile);

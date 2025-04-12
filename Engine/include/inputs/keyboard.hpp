@@ -11,7 +11,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace Engine {
+namespace Keyboard {
 
 enum class KeyState {
     RELEASED,
@@ -70,7 +70,7 @@ public:
 };
 
 // Global instance
-extern KeyboardManager g_keyboard;
+extern KeyboardManager Input;
 
 } // namespace Engine
 
