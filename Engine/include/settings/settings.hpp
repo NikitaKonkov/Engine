@@ -19,6 +19,8 @@ struct Settings {
         if (!file.is_open()) {
             std::cout << "Could not open settings file: " << filename << std::endl;
             return false;
+        }else{
+            std::cout << "Settings file opened successfully: " << filename << std::endl;
         }
         
         std::string line, key, value;

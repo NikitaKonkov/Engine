@@ -5,28 +5,27 @@
 #include <Inputs/keyboard.hpp>
 
 
-const std::string SETTINGS_FILE = "resources/settings.txt";
-
+const std::string GRAPHICS_CONFIG_FILE = "resources/video_settings.txt";
+const std::string KEYBOARD_CONFIG_FILE = "resources/keyboard_config.txt";
 int main(int argc, char *argv[])
 {
     SDL_Window *window;
     SDL_Event event;
     
+    // Initialize SDL and set log priority to show all messages
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 3;
     }
     
-    // Early in your initialization
-    bool settingsLoaded = g_settings.loadFromFile(SETTINGS_FILE);
-    if (!settingsLoaded) {
-        // If loading failed, use defaults and save them
-        g_settings = getDefaultSettings();
-        g_settings.saveToFile(SETTINGS_FILE);
-    }
+    // Set log level to see all log messages
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDL_Log("SDL initialized successfully");
+    
+
 
     // Configure keyboard actions
-    if (!Keyboard::Input.loadConfiguration("resources/keyboard_config.txt")) {
+    if (!Keyboard::Input.loadConfiguration(KEYBOARD_CONFIG_FILE)) {
         // Generate default keyboard config
         Keyboard::Input.mapAction("MOVE_FORWARD", SDLK_W, SDLK_UP);
         Keyboard::Input.mapAction("MOVE_BACKWARD", SDLK_S, SDLK_DOWN);
@@ -38,14 +37,6 @@ int main(int argc, char *argv[])
         Keyboard::Input.saveConfiguration();
     }
 
-    // Register callbacks for some actions
-    Keyboard::Input.registerActionCallback("RELOAD_SETTINGS", 
-        []() { // Press callback
-            if (g_settings.loadFromFile(SETTINGS_FILE)) {
-                SDL_Log("Settings refreshed");
-            }
-        }
-    );
 
     // Now you can use g_settings throughout your application
     window = SDL_CreateWindow("Game Keyboard", 
@@ -87,8 +78,10 @@ int main(int argc, char *argv[])
         // Rendering code would go here
         
         // Window resizing example
-        if (Keyboard::Input.isActionJustPressed("RELOAD_SETTINGS")) {
+        if (Keyboard::Input.isActionPressed("RELOAD_SETTINGS")) {
+            g_settings.loadFromFile(GRAPHICS_CONFIG_FILE);
             SDL_SetWindowSize(window, g_settings.screenWidth, g_settings.screenHeight);
+            SDL_Log("Window resized to %d x %d", g_settings.screenWidth, g_settings.screenHeight);
         }
     }
     
