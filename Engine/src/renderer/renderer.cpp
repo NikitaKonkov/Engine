@@ -23,18 +23,6 @@ int main(int argc, char *argv[])
     SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
     SDL_Log("SDL initialized successfully");
     
-    // // Configure keyboard actions
-    // if (!Keyboard::Input.loadConfiguration(Config::KEYBOARD_CONFIG_FILE)) {
-    //     // Generate default keyboard config
-    //     Keyboard::Input.mapAction("MOVE_FORWARD", SDLK_W, SDLK_UP);
-    //     Keyboard::Input.mapAction("MOVE_BACKWARD", SDLK_S, SDLK_DOWN);
-    //     Keyboard::Input.mapAction("MOVE_LEFT", SDLK_A, SDLK_LEFT);
-    //     Keyboard::Input.mapAction("MOVE_RIGHT", SDLK_D, SDLK_RIGHT);
-    //     Keyboard::Input.mapAction("JUMP", SDLK_SPACE);
-    //     Keyboard::Input.mapAction("CROUCH", SDLK_LCTRL);
-    //     Keyboard::Input.mapAction("RELOAD_SETTINGS", SDLK_F5);
-    //     Keyboard::Input.saveConfiguration();
-    // }
 
     // Load preferences
     window = SDL_CreateWindow("Game Keyboard", 
