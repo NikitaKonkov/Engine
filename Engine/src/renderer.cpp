@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+#include <SDL3/SDL_events.h>
 #include <settings/settings.hpp>
 
 
@@ -35,14 +36,24 @@ int main(int argc, char *argv[])
     // This includes instance creation, device selection, swap chain setup, etc.
     // For now, we'll just have an empty window loop
     
+    // In your event handling code
     while (1) {
         SDL_PollEvent(&event);
         if (event.type == SDL_EVENT_QUIT) {
             break;
         }
+        else if (event.type == SDL_EVENT_KEY_DOWN) {
+            // Reload settings on F5 press
+            if (event.key.key == SDLK_F5) {  // Changed from event.key.keysym.sym to event.key.key
+                if (g_settings.loadFromFile("resources/settings.txt")) {
+                    SDL_SetWindowSize(window, g_settings.screenWidth, g_settings.screenHeight);
+                    // Apply other settings as needed
+                    SDL_Log("Settings refreshed");
+                }
+            }
+        }
         
-        // Vulkan rendering would happen here
-        // For now, the window will just be blank
+        // Rendering code...
     }
     
     // Clean up Vulkan resources (when implemented)
