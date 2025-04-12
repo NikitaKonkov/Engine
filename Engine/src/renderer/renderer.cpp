@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     
 
     // Load preferences
-    window = SDL_CreateWindow("Game Keyboard", 
+    window = SDL_CreateWindow("Game Engine", 
                              g_settings.screenWidth, 
                              g_settings.screenHeight, 
                              SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
