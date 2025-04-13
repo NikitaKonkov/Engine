@@ -1,23 +1,36 @@
 # C++ Game Engine with SDL3 and Vulkan
 
-A modern C++ game engine built with SDL3 and Vulkan, providing a flexible foundation for game development with optimized performance.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![C++](https://img.shields.io/badge/C++-17-blue.svg?logo=c%2B%2B)
+![SDL](https://img.shields.io/badge/SDL3-3.2.10-brightgreen.svg)
+![Vulkan](https://img.shields.io/badge/Vulkan-1.4.309-red.svg?logo=vulkan)
+![Status](https://img.shields.io/badge/status-%20prototype-yellow.svg)
+![Build](https://img.shields.io/badge/build-cmake-success.svg)
 
-## Features
+A modern C++ game engine built with SDL3 and Vulkan, providing a flexible foundation for game development with optimized performance. Designed to leverage modern hardware capabilities while maintaining an intuitive API for game developers.
 
-- SDL3 integration for window management and input handling
-- Vulkan rendering backend
-- Settings management system with file persistence
-- CPU optimization options (AVX2/AVX512)
-- Cross-platform CMake build system
+<p align="center">
+  <img src="https://via.placeholder.com/800x400?text=Engine+Visualization" alt="Engine Visualization" width="600">
+</p>
 
-## Requirements
+## ✨ Features
 
-- C++17 compatible compiler
-- CMake 3.16 or higher
-- SDL3
-- Vulkan SDK 1.4.309.0 or compatible version
+- 🖼️ **SDL3 Integration** - Window management, input handling, and platform abstraction
+- 🚀 **Vulkan Rendering Backend** - Modern graphics API for optimal performance
+- ⚙️ **Advanced Input System** - Flexible keyboard/mouse/gamepad handling with action mapping
+- 🔊 **Basic Audio Engine** - Simple sound playback functionality
+- 📁 **Settings Management** - File-based configuration with automatic persistence
+- 💻 **CPU Optimization** - Optional AVX2/AVX512 instruction set utilization
+- 🛠️ **Cross-Platform** - CMake build system for Windows and Linux (coming soon)
 
-## Building the Project
+## 📋 Requirements
+
+- **C++17 compatible compiler** (MSVC 19.20+, GCC 8+, or Clang 8+)
+- **CMake 3.16+**
+- **SDL3** development libraries
+- **Vulkan SDK 1.4.309.0+**
+
+## 🔧 Building the Project
 
 ### Prerequisites
 
@@ -36,7 +49,7 @@ build.bat --clean         # Clean build with AVX2
 build.bat --clean --avx512  # Clean build with AVX512
 ```
 
-#### Linux <- Dont work right now :)
+#### Linux (Coming Soon)
 Use the provided shell script:
 ```
 ./build.sh                # Build with AVX2 (default)
@@ -45,12 +58,12 @@ Use the provided shell script:
 ./build.sh --clean --avx512  # Clean build with AVX512
 ```
 
-### Manual Build Instructions (Alternative)
+### Manual Build Instructions
 
 1. Clone the repository
    ```
-   git clone https://github.com/NikitaKonkov/Game-Engine-CPP-SDL.git
-   cd Game-Engine-CPP-SDL
+   git clone https://github.com/yourusername/GameEngine-SDL-VULKAN-CPP.git
+   cd GameEngine-SDL-VULKAN-CPP
    ```
 
 2. Create a build directory
@@ -71,40 +84,84 @@ Use the provided shell script:
 
 ### Build Options
 
-- `USE_AVX512` - Enable AVX512 instruction set (OFF by default, requires compatible hardware)
-- `PRODUCTION_BUILD` - Configure for production release (OFF by default)
+| Option | Description | Default |
+|--------|-------------|---------|
+| `USE_AVX512` | Enable AVX512 instruction set | `OFF` |
+| `PRODUCTION_BUILD` | Configure for production release | `OFF` |
+| `BUILD_TESTS` | Build test suite | `OFF` |
 
 Example:
 ```
 cmake -DUSE_AVX512=ON -DPRODUCTION_BUILD=ON ..
 ```
 
-## Project Structure
+## 📂 Project Structure
 
-- `/Engine` - Core engine code
-  - `/include` - Header files
-    - `/settings` - Settings management system
-  - `/src` - Source files
-    - `renderer.cpp` - Main rendering implementation
-    - `settings.cpp` - Settings implementation
-  - `/resources` - Game resources and configurations
+```
+/
+├── Engine/                     # Core engine code
+│   ├── include/                # Header files
+│   │   ├── app/               # Main application components
+│   │   ├── audio/             # Audio system 
+│   │   ├── inputs/            # Input handling system
+│   │   ├── renderer/          # Rendering system
+│   │   └── settings/          # Configuration system
+│   ├── src/                    # Source files
+│   │   ├── app/               # Application implementation
+│   │   ├── audio/             # Audio implementation
+│   │   ├── inputs/            # Input system implementation
+│   │   ├── renderer/          # Renderer implementation
+│   │   └── settings/          # Settings implementation
+│   └── resources/              # Game resources and configurations
+│       ├── shaders/           # GLSL shaders
+│       ├── sounds/            # Audio files
+│       └── settings.txt       # Default settings file
+└── CMakeLists.txt             # Main build system
+```
 
-## Configuration
+## ⚙️ Configuration
 
 The engine uses a settings system that manages configuration through a text file. Default settings include:
 
-- Screen width/height
-- Fullscreen mode
-- VSync
-- Maximum FPS
-- Audio volume
+| Setting | Description | Default Value |
+|---------|-------------|---------------|
+| screenWidth | Display width | 1280 |
+| screenHeight | Display height | 720 |
+| fullscreen | Fullscreen mode | false |
+| vsync | Vertical sync enabled | true |
+| maxFPS | Frame rate limit | 60 |
+| masterVolume | Main volume level | 1.0 |
 
 Settings are automatically saved to and loaded from `resources/settings.txt`.
 
-## License
+## 🔑 Key Features Implementation
 
-[Your license information here]
+### Input System
 
-## Contributing
+The engine offers a flexible input system that supports both direct key status queries and action mapping:
 
-[Your contribution guidelines here]
+```cpp
+// Check if a specific key is pressed
+if (Keyboard::Input.isKeyPressed(SDLK_SPACE)) {
+    // Jump action
+}
+
+// Use the action mapping system
+Keyboard::Input.mapAction("Jump", SDLK_SPACE, SDLK_W);
+if (Keyboard::Input.isActionPressed("Jump")) {
+    // Jump action
+}
+```
+
+### Graphics Pipeline
+
+The rendering system uses a modern Vulkan pipeline with:
+
+- Shader hot-reloading for rapid development
+- Swap chain management with window resize handling
+- Command buffer optimization
+- Basic triangle rendering foundation
+
+## 📝 License
+
+[MIT License](LICENSE) - Feel free to use, modify, and distribute this code for personal and commercial projects.

@@ -5,7 +5,6 @@
 
 int main(int argc, char* argv[]) {
 
-
     try {
         // Create application with settings from global config
         App app("Vulkan SDL Game Engine", 
