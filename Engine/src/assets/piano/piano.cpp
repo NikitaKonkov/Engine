@@ -26,23 +26,20 @@ bool Piano::initialize() {
 }
 
 void Piano::update() {
+    SDL_Delay(100); // Simulate a small delay for the update loop
     // Handle any updates required for the piano system
 }
 
 void Piano::handleKeyEvent(const SDL_Event& event) {
     if (event.type == SDL_EVENT_KEY_DOWN) {
         SDL_Keycode key = event.key.key;
-        
         // Check if this key is mapped to a piano note
         auto noteIt = keyToNoteMap.find(key);
         if (noteIt != keyToNoteMap.end()) {
             playNote(noteIt->second);
         }
         
-        // Handle sustain mode (Space key toggles sustain)
-        if (key == SDLK_SPACE) {
-            toggleSustainMode();
-        }
+
     }
 }
 
