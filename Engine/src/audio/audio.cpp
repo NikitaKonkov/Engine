@@ -6,12 +6,18 @@
 #include <mutex>
 #include <atomic>
 #include <chrono>
+#include <map>
 #include <inputs/keyboard.hpp>  // Add this include
 
 // Define M_PI if not already defined
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+// Global variables for multi-channel audio management
+std::map<int, AudioSystem*> audioChannels;
+std::mutex channelsMutex;
+bool longSustainMode = false; // For piano sustain mode
 
 AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f), isPlaying(false) {
     // Add default sine wave component
@@ -163,7 +169,7 @@ void AudioSystem::SetFrequency(float newFreq) {
     if (!waveComponents.empty()) {
         waveComponents[0].frequency = frequency;
     } else {
-        AddWaveComponent(WaveType::Sine, frequency, 0.2f);
+        AddWaveComponent(WaveType::Sine, frequency, 1.0f);
     }
     
     GenerateComplexWave();
@@ -186,19 +192,7 @@ void AudioSystem::PlaySoundAsync(int durationMs) {
     audioThread = std::thread([this, durationMs]() {
         this->PlaySound();
         
-        // Calculate the end time
-        auto startTime = std::chrono::steady_clock::now();
-        auto endTime = startTime + std::chrono::milliseconds(durationMs);
-        
-        // Check for key releases at regular intervals during playback
-        while (std::chrono::steady_clock::now() < endTime) {
-            if (Keyboard::Input.isKeyJustReleased(SDLK_SPACE) || 
-                Keyboard::Input.isKeyJustReleased(SDLK_ESCAPE)) {
-                this->StopSound();
-                break;
-            }
-            SDL_Delay(0); // Check every 10ms - fixed from 0 to 10
-        }
+
         
         this->isPlaying.store(false);
         std::cout << "Async sound playback finished." << std::endl;
@@ -217,30 +211,55 @@ void AudioSystem::StopAsyncSound() {
     }
 }
 
-// Example function to play a simple sound asynchronously
+// Example function to play a simple sound asynchronously with channel support
 void PlaySimpleSoundAsync(int durationMs, float frequency) {
-    static AudioSystem* audioSystem = nullptr;
-    static std::mutex audioMutex;
+    static int nextChannelId = 1;
+    std::lock_guard<std::mutex> lock(channelsMutex);
     
-    std::lock_guard<std::mutex> lock(audioMutex);
+    int actualDuration = longSustainMode ? 500 : durationMs; // Use longer duration if sustain mode is on
     
-    // Create the audio system if it doesn't exist
-    if (!audioSystem) {
-        audioSystem = new AudioSystem();
-        if (!audioSystem->Initialize()) {
-            delete audioSystem;
-            audioSystem = nullptr;
-            std::cerr << "Failed to initialize audio system" << std::endl;
-            return;
-        }
+    // Create a new audio system for this sound
+    int channelId = nextChannelId++;
+    AudioSystem* audioSystem = new AudioSystem();
+    
+    if (!audioSystem->Initialize()) {
+        delete audioSystem;
+        std::cerr << "Failed to initialize audio system for channel " << channelId << std::endl;
+        return;
     }
     
-    // Only play if no sound is currently playing
-    if (!audioSystem->IsPlaying()) {
-        audioSystem->SetFrequency(frequency);
-        audioSystem->PlaySoundAsync(durationMs);
-    } else {
-        std::cout << "Sound is already playing. Wait for it to finish." << std::endl;
+    // Store the channel
+    audioChannels[channelId] = audioSystem;
+    
+    // Configure and play the sound
+    audioSystem->SetFrequency(frequency);
+    
+    // Start a new thread to play the sound and clean up when done
+    std::thread([channelId, audioSystem, actualDuration]() {
+        audioSystem->PlaySound();
+        SDL_Delay(actualDuration);
+        audioSystem->StopSound();
+        
+        // Clean up after sound finishes
+        std::lock_guard<std::mutex> cleanupLock(channelsMutex);
+        if (audioChannels.find(channelId) != audioChannels.end()) {
+            delete audioSystem;
+            audioChannels.erase(channelId);
+        }
+    }).detach();
+}
+
+// Function to toggle sustain mode
+void ToggleSustainMode() {
+    longSustainMode = !longSustainMode;
+    std::cout << "Piano sustain mode: " << (longSustainMode ? "ON" : "OFF") << std::endl;
+}
+
+// Function to stop all playing sounds
+void StopAllSounds() {
+    std::lock_guard<std::mutex> lock(channelsMutex);
+    for (auto& [channelId, system] : audioChannels) {
+        system->StopSound();
     }
 }
 

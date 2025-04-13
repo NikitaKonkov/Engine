@@ -3,11 +3,29 @@
 #include <iostream>
 #include <fstream>
 #include <audio/audio.hpp>
+#include <map> // Add this include for std::map
+#include <string>
 
-// Function declaration for the async sound function
+// Function declarations for the audio system
 extern void PlaySimpleSoundAsync(int durationMs, float frequency);
+extern void ToggleSustainMode();
+extern void StopAllSounds();
 
 namespace Keyboard {
+
+// Musical note frequencies (using standard A4 = 440Hz as reference)
+const std::map<std::string, float> noteFrequencies = {
+    {"Q", 261.63f},  // C4
+    {"W", 293.66f},  // D4
+    {"E", 329.63f},  // E4
+    {"R", 349.23f},  // F4
+    {"T", 392.00f},  // G4
+    {"Z", 440.00f},  // A4
+    {"U", 493.88f},  // B4
+    {"I", 523.25f},  // C5
+    {"O", 587.33f},  // D5
+    {"P", 659.25f}   // E5
+};
 
 KeyboardManager Input;
 
@@ -102,6 +120,17 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
             keyStates[key] == KeyState::JUST_RELEASED) {
             keyStates[key] = KeyState::JUST_PRESSED;
             
+            // Handle space key to toggle sustain mode
+            std::string keyName = keycodeToString(key);
+            if (keyName == "SPACE") {
+                ToggleSustainMode();
+            }
+            
+            // Play piano note if it's a piano key (QWERTZUIOP)
+            if (noteFrequencies.find(keyName) != noteFrequencies.end()) {
+                PlaySimpleSoundAsync(1000, noteFrequencies.at(keyName));
+            }
+            
             // Trigger callbacks for actions mapped to this key
             for (auto& [name, mapping] : actionMappings) {
                 if (mapping.primaryKey == key || mapping.alternateKey == key) {
@@ -160,9 +189,9 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
 
 void KeyboardManager::update() {
     for (auto& [key, state] : keyStates) {
-        std::string DamnKey = keycodeToString(key);
+        std::string keyName = keycodeToString(key);
         if (state == KeyState::JUST_PRESSED) {
-            SDL_Log("Key %s JUST_PRESSED", keycodeToString(key).c_str());
+            SDL_Log("Key %s JUST_PRESSED", keyName.c_str());
             state = KeyState::PRESSED;
         } 
         else if (state == KeyState::JUST_RELEASED) {
@@ -171,24 +200,12 @@ void KeyboardManager::update() {
         
         // Handle hold callbacks
         if (state == KeyState::PRESSED) {
-            SDL_Log("Key %s PRESSED", keycodeToString(key).c_str());
+            SDL_Log("Key %s PRESSED", keyName.c_str());
             
             for (auto& [name, mapping] : actionMappings) {
                 if ((mapping.primaryKey == key || mapping.alternateKey == key) && mapping.holdCallback) {
                     mapping.holdCallback();
                 }
-                
-                // Play sounds for musical keyboard keys with proper parameters
-                if(DamnKey == "Q") PlaySimpleSoundAsync(1000, 80.0f);
-                if(DamnKey == "W") PlaySimpleSoundAsync(1000, 90.0f);
-                if(DamnKey == "E") PlaySimpleSoundAsync(1000, 100.0f);
-                if(DamnKey == "R") PlaySimpleSoundAsync(1000, 110.0f);
-                if(DamnKey == "T") PlaySimpleSoundAsync(1000, 120.0f);
-                if(DamnKey == "Z") PlaySimpleSoundAsync(1000, 130.0f);
-                if(DamnKey == "U") PlaySimpleSoundAsync(1000, 140.0f);
-                if(DamnKey == "I") PlaySimpleSoundAsync(1000, 150.0f);
-                if(DamnKey == "O") PlaySimpleSoundAsync(1000, 160.0f);
-                if(DamnKey == "P") PlaySimpleSoundAsync(1000, 170.0f);
             }
         }
     }

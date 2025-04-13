@@ -61,4 +61,8 @@ private:
 
 // Helper functions for simpler usage
 void PlaySimpleSound();
+
+// Piano functionality
 void PlaySimpleSoundAsync(int durationMs, float frequency);
+void ToggleSustainMode();
+void StopAllSounds();
