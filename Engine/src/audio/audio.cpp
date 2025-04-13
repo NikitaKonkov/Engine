@@ -6,6 +6,7 @@
 #include <mutex>
 #include <atomic>
 #include <chrono>
+#include <inputs/keyboard.hpp>  // Add this include
 
 // Define M_PI if not already defined
 #ifndef M_PI
@@ -180,15 +181,25 @@ void AudioSystem::PlaySoundAsync(int durationMs) {
         return;
     }
     
-    // Stop any previous thread that might still be running
-    StopAsyncSound();
-    
     // Start a new thread to play the sound
     isPlaying.store(true);
     audioThread = std::thread([this, durationMs]() {
         this->PlaySound();
-        SDL_Delay(durationMs);
-        this->StopSound();
+        
+        // Calculate the end time
+        auto startTime = std::chrono::steady_clock::now();
+        auto endTime = startTime + std::chrono::milliseconds(durationMs);
+        
+        // Check for key releases at regular intervals during playback
+        while (std::chrono::steady_clock::now() < endTime) {
+            if (Keyboard::Input.isKeyJustReleased(SDLK_SPACE) || 
+                Keyboard::Input.isKeyJustReleased(SDLK_ESCAPE)) {
+                this->StopSound();
+                break;
+            }
+            SDL_Delay(0); // Check every 10ms - fixed from 0 to 10
+        }
+        
         this->isPlaying.store(false);
         std::cout << "Async sound playback finished." << std::endl;
     });

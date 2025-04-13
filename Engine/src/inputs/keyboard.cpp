@@ -5,7 +5,7 @@
 #include <audio/audio.hpp>
 
 // Function declaration for the async sound function
-extern void PlaySimpleSoundAsync(int durationMs);
+extern void PlaySimpleSoundAsync(int durationMs, float frequency);
 
 namespace Keyboard {
 
@@ -160,13 +160,9 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
 
 void KeyboardManager::update() {
     for (auto& [key, state] : keyStates) {
+        std::string DamnKey = keycodeToString(key);
         if (state == KeyState::JUST_PRESSED) {
-    
-            // Play a sound asynchronously for 1 second
-            PlaySimpleSoundAsync(1000, 180);
-        
             SDL_Log("Key %s JUST_PRESSED", keycodeToString(key).c_str());
-            
             state = KeyState::PRESSED;
         } 
         else if (state == KeyState::JUST_RELEASED) {
@@ -176,10 +172,23 @@ void KeyboardManager::update() {
         // Handle hold callbacks
         if (state == KeyState::PRESSED) {
             SDL_Log("Key %s PRESSED", keycodeToString(key).c_str());
+            
             for (auto& [name, mapping] : actionMappings) {
                 if ((mapping.primaryKey == key || mapping.alternateKey == key) && mapping.holdCallback) {
                     mapping.holdCallback();
                 }
+                
+                // Play sounds for musical keyboard keys with proper parameters
+                if(DamnKey == "Q") PlaySimpleSoundAsync(1000, 80.0f);
+                if(DamnKey == "W") PlaySimpleSoundAsync(1000, 90.0f);
+                if(DamnKey == "E") PlaySimpleSoundAsync(1000, 100.0f);
+                if(DamnKey == "R") PlaySimpleSoundAsync(1000, 110.0f);
+                if(DamnKey == "T") PlaySimpleSoundAsync(1000, 120.0f);
+                if(DamnKey == "Z") PlaySimpleSoundAsync(1000, 130.0f);
+                if(DamnKey == "U") PlaySimpleSoundAsync(1000, 140.0f);
+                if(DamnKey == "I") PlaySimpleSoundAsync(1000, 150.0f);
+                if(DamnKey == "O") PlaySimpleSoundAsync(1000, 160.0f);
+                if(DamnKey == "P") PlaySimpleSoundAsync(1000, 170.0f);
             }
         }
     }
@@ -221,10 +230,7 @@ bool KeyboardManager::mapAction(const std::string& actionName, SDL_Keycode prima
     actionMappings[actionName] = ActionMapping{
         actionName,
         primaryKey,
-        alternateKey,
-        nullptr, // press callback
-        nullptr, // release callback
-        nullptr  // hold callback
+        alternateKey
     };
     return true;
 }
