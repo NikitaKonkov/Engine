@@ -3,6 +3,10 @@
 #include <iostream>
 #include <fstream>
 #include <audio/audio.hpp>
+
+// Function declaration for the async sound function
+extern void PlaySimpleSoundAsync(int durationMs);
+
 namespace Keyboard {
 
 KeyboardManager Input;
@@ -158,8 +162,8 @@ void KeyboardManager::update() {
     for (auto& [key, state] : keyStates) {
         if (state == KeyState::JUST_PRESSED) {
     
-            // Play a simple sound for 2 seconds
-            PlaySimpleSound();
+            // Play a sound asynchronously for 1 second
+            PlaySimpleSoundAsync(1000);
         
             SDL_Log("Key %s JUST_PRESSED", keycodeToString(key).c_str());
             

@@ -2,17 +2,22 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 #include <cmath>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <chrono>
 
 // Define M_PI if not already defined
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f) {
+AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f), isPlaying(false) {
     GenerateSineWave();
 }
 
 AudioSystem::~AudioSystem() {
+    StopAsyncSound();
     if (audioStream) {
         SDL_DestroyAudioStream(audioStream);
     }
@@ -97,7 +102,71 @@ void AudioSystem::SetFrequency(float newFreq) {
     std::cout << "Frequency set to " << frequency << " Hz" << std::endl;
 }
 
-// Example function to play a simple sound
+bool AudioSystem::IsPlaying() const {
+    return isPlaying;
+}
+
+void AudioSystem::PlaySoundAsync(int durationMs) {
+    // If a sound is already playing, don't start another one
+    if (isPlaying.load()) {
+        std::cout << "Sound is already playing. Wait for it to finish." << std::endl;
+        return;
+    }
+    
+    // Stop any previous thread that might still be running
+    StopAsyncSound();
+    
+    // Start a new thread to play the sound
+    isPlaying.store(true);
+    audioThread = std::thread([this, durationMs]() {
+        this->PlaySound();
+        SDL_Delay(durationMs);
+        this->StopSound();
+        this->isPlaying.store(false);
+        std::cout << "Async sound playback finished." << std::endl;
+    });
+    
+    // Detach the thread to let it run independently
+    audioThread.detach();
+    std::cout << "Started async sound playback for " << durationMs << " ms" << std::endl;
+}
+
+void AudioSystem::StopAsyncSound() {
+    if (isPlaying.load()) {
+        StopSound();
+        isPlaying.store(false);
+        std::cout << "Async sound playback stopped." << std::endl;
+    }
+}
+
+// Example function to play a simple sound asynchronously
+void PlaySimpleSoundAsync(int durationMs = 1000) {
+    static AudioSystem* audioSystem = nullptr;
+    static std::mutex audioMutex;
+    
+    std::lock_guard<std::mutex> lock(audioMutex);
+    
+    // Create the audio system if it doesn't exist
+    if (!audioSystem) {
+        audioSystem = new AudioSystem();
+        if (!audioSystem->Initialize()) {
+            delete audioSystem;
+            audioSystem = nullptr;
+            std::cerr << "Failed to initialize audio system" << std::endl;
+            return;
+        }
+    }
+    
+    // Only play if no sound is currently playing
+    if (!audioSystem->IsPlaying()) {
+        audioSystem->SetFrequency(440.0f);
+        audioSystem->PlaySoundAsync(durationMs);
+    } else {
+        std::cout << "Sound is already playing. Wait for it to finish." << std::endl;
+    }
+}
+
+// Original synchronous version
 void PlaySimpleSound() {
     AudioSystem audioSystem;
     
@@ -107,10 +176,8 @@ void PlaySimpleSound() {
         // Play a basic sound at 440Hz (A4 note)
         audioSystem.SetFrequency(440.0f);
         audioSystem.PlaySound();
-        
+        SDL_Delay(1000);
         // Play for 2 seconds
-        SDL_Delay(100);
-        
         audioSystem.StopSound();
     }
 }

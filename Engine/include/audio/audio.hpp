@@ -1,27 +1,40 @@
 #pragma once
 
-#include <SDL3/SDL_audio.h>
+#include <SDL3/SDL.h>
 #include <vector>
+#include <thread>
+#include <atomic>
 
 class AudioSystem {
-private:
-    SDL_AudioDeviceID audioDeviceID;
-    SDL_AudioSpec audioSpec;
-    SDL_AudioStream* audioStream;
-    std::vector<float> sineWaveData;
-    int sampleRate;
-    float frequency;
-    
 public:
     AudioSystem();
     ~AudioSystem();
     
-    void GenerateSineWave();
     bool Initialize();
     void PlaySound();
     void StopSound();
-    void SetFrequency(float newFreq);
+    void SetFrequency(float freq);
+    
+    // New asynchronous methods
+    void PlaySoundAsync(int durationMs);
+    void StopAsyncSound();
+    bool IsPlaying() const;
+    
+private:
+    void GenerateSineWave();
+    
+    SDL_AudioDeviceID audioDeviceID;
+    SDL_AudioStream* audioStream;
+    SDL_AudioSpec audioSpec;
+    std::vector<float> sineWaveData;
+    int sampleRate;
+    float frequency;
+    
+    // For async playback
+    std::atomic<bool> isPlaying;
+    std::thread audioThread;
 };
 
-// Example function
+// Helper functions for simpler usage
 void PlaySimpleSound();
+void PlaySimpleSoundAsync(int durationMs);
