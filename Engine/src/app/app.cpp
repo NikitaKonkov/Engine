@@ -3,6 +3,10 @@
 #include <settings/settings.hpp>
 #include <stdexcept>
 #include <iostream>
+#include <audio/audio.hpp>
+#include <audio/mixer.hpp>
+
+
 
 App::App(const std::string& title, int width, int height)
     : title(title), width(width), height(height), window(nullptr), running(false) {
@@ -51,10 +55,18 @@ void App::run() {
     // Initialize the piano system when the app starts running
     InitializePiano();
     
+    // Initialize the audio mixer
+    InitializeAudioMixer();
+    
     while (running) {
         processEvents();
         
         update();
+        
+        // Update the audio mixer to handle fade-outs
+        if (gAudioMixer) {
+            gAudioMixer->Update();
+        }
         
         // Piano update - this will handle any piano-specific updates
         if (gPiano) {
@@ -63,6 +75,9 @@ void App::run() {
         
         render();
     }
+    
+    // Shutdown the audio mixer when the app stops running
+    ShutdownAudioMixer();
     
     // Shutdown the piano system when the app stops running
     ShutdownPiano();

@@ -15,7 +15,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f), isPlaying(false) {
+AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f), isPlaying(false), fadeSamples(1000) {
     // Add default sine wave component
     AddWaveComponent(WaveType::Sine, frequency, 0.2f);
     GenerateComplexWave();
@@ -33,12 +33,20 @@ AudioSystem::~AudioSystem() {
 
 // Generate a simple sine wave
 void AudioSystem::GenerateSineWave() {
-    // 1 second of audio
+    // 1 second of audio with additional space for fade in/out
     sineWaveData.resize(sampleRate);
+    
+    // Initialize with silence
+    std::fill(sineWaveData.begin(), sineWaveData.end(), 0.0f);
+    
+    // Generate the sine wave
     for (int i = 0; i < sampleRate; i++) {
         double time = static_cast<double>(i) / sampleRate;
-        sineWaveData[i] = static_cast<float>(sin(2.0 * M_PI * frequency * time)) * 1.0f; // 1.0f for volume control
+        sineWaveData[i] = static_cast<float>(sin(2.0 * M_PI * frequency * time)) * 0.8f; // 0.8f for volume control
     }
+    
+    // Apply fades
+    ApplyFades();
 }
 
 float AudioSystem::GenerateWaveSample(WaveType type, float phase, float amplitude) {
@@ -69,6 +77,25 @@ void AudioSystem::ClearWaveComponents() {
     waveComponents.clear();
 }
 
+void AudioSystem::ApplyFades() {
+    // Apply fade-in to the first part of the waveform
+    for (int i = 0; i < fadeSamples && i < sineWaveData.size(); i++) {
+        float fadeProgress = static_cast<float>(i) / fadeSamples;
+        // Apply a smooth sine fade-in
+        float fadeMultiplier = sin(fadeProgress * (M_PI / 2.0f));
+        sineWaveData[i] *= fadeMultiplier;
+    }
+    
+    // Apply fade-out to the last part of the waveform
+    size_t fadeOutStart = sineWaveData.size() - fadeSamples;
+    for (size_t i = fadeOutStart; i < sineWaveData.size(); i++) {
+        float fadeProgress = static_cast<float>(sineWaveData.size() - i) / fadeSamples;
+        // Apply a smooth sine fade-out
+        float fadeMultiplier = sin(fadeProgress * (M_PI / 2.0f));
+        sineWaveData[i] *= fadeMultiplier;
+    }
+}
+
 void AudioSystem::GenerateComplexWave() {
     // If no components are defined, use the basic sine wave
     if (waveComponents.empty()) {
@@ -78,6 +105,10 @@ void AudioSystem::GenerateComplexWave() {
     
     // Generate combined waveform
     sineWaveData.resize(sampleRate);
+    
+    // Initialize buffer with silence
+    std::fill(sineWaveData.begin(), sineWaveData.end(), 0.0f);
+    
     for (int i = 0; i < sampleRate; i++) {
         double time = static_cast<double>(i) / sampleRate;
         float sample = 0.0f;
@@ -96,6 +127,9 @@ void AudioSystem::GenerateComplexWave() {
         
         sineWaveData[i] = sample;
     }
+    
+    // Apply fades to smooth out the beginning and end
+    ApplyFades();
 }
 
 bool AudioSystem::Initialize() {
@@ -133,18 +167,31 @@ bool AudioSystem::Initialize() {
         return false;
     }
     
+    // Before playing any sound, clear the audio buffer
+    SDL_ClearAudioStream(audioStream);
+    
     std::cout << "Audio system initialized successfully!" << std::endl;
     return true;
 }
 
 void AudioSystem::PlaySound() {
     if (audioDeviceID > 0 && audioStream) {
+        // Clear any previous data in the stream
+        SDL_ClearAudioStream(audioStream);
+        
+        // Add 50ms of silence before the actual sound to ensure clean start
+        std::vector<float> silenceBuffer(sampleRate / 20, 0.0f);
+        SDL_PutAudioStreamData(audioStream, silenceBuffer.data(), static_cast<int>(silenceBuffer.size() * sizeof(float)));
+        
         // Put the sine wave data into the stream
         if (!SDL_PutAudioStreamData(audioStream, sineWaveData.data(), 
                                    static_cast<int>(sineWaveData.size() * sizeof(float)))) {
             std::cerr << "Failed to put audio data: " << SDL_GetError() << std::endl;
             return;
         }
+        
+        // Add 50ms of silence after the actual sound to ensure clean end
+        SDL_PutAudioStreamData(audioStream, silenceBuffer.data(), static_cast<int>(silenceBuffer.size() * sizeof(float)));
         
         SDL_ResumeAudioDevice(audioDeviceID);
         std::cout << "Playing sound..." << std::endl;
@@ -153,6 +200,11 @@ void AudioSystem::PlaySound() {
 
 void AudioSystem::StopSound() {
     if (audioDeviceID > 0) {
+        // Instead of an abrupt stop, fade out gracefully
+        // First clear the stream
+        SDL_ClearAudioStream(audioStream);
+        
+        // Then pause the device
         SDL_PauseAudioDevice(audioDeviceID);
         std::cout << "Sound stopped." << std::endl;
     }

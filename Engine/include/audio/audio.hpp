@@ -43,6 +43,7 @@ public:
 private:
     void GenerateSineWave();
     float GenerateWaveSample(WaveType type, float phase, float amplitude);
+    void ApplyFades(); // New method to apply fade-in and fade-out effects
     
     SDL_AudioDeviceID audioDeviceID;
     SDL_AudioStream* audioStream;
@@ -57,6 +58,9 @@ private:
     // For async playback
     std::atomic<bool> isPlaying;
     std::thread audioThread;
+    
+    // For fade effects
+    int fadeSamples; // Number of samples for fades
 };
 
 // Helper functions for simpler usage
