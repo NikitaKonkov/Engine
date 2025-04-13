@@ -8,16 +8,12 @@
 #include <chrono>
 #include <map>
 #include <inputs/keyboard.hpp>  // Add this include
+#include <audio/mixer.hpp>
 
 // Define M_PI if not already defined
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-// Global variables for multi-channel audio management
-std::map<int, AudioSystem*> audioChannels;
-std::mutex channelsMutex;
-bool longSustainMode = false; // For piano sustain mode
 
 AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f), isPlaying(false) {
     // Add default sine wave component
@@ -41,7 +37,7 @@ void AudioSystem::GenerateSineWave() {
     sineWaveData.resize(sampleRate);
     for (int i = 0; i < sampleRate; i++) {
         double time = static_cast<double>(i) / sampleRate;
-        sineWaveData[i] = static_cast<float>(sin(2.0 * M_PI * frequency * time)) * 0.2f; // 0.2f for volume control
+        sineWaveData[i] = static_cast<float>(sin(2.0 * M_PI * frequency * time)) * 1.0f; // 1.0f for volume control
     }
 }
 
@@ -192,8 +188,10 @@ void AudioSystem::PlaySoundAsync(int durationMs) {
     audioThread = std::thread([this, durationMs]() {
         this->PlaySound();
         
-
+        // Sleep for the specified duration
+        SDL_Delay(durationMs);
         
+        this->StopSound();
         this->isPlaying.store(false);
         std::cout << "Async sound playback finished." << std::endl;
     });
@@ -211,80 +209,49 @@ void AudioSystem::StopAsyncSound() {
     }
 }
 
-// Example function to play a simple sound asynchronously with channel support
-void PlaySimpleSoundAsync(int durationMs, float frequency) {
-    static int nextChannelId = 1;
-    std::lock_guard<std::mutex> lock(channelsMutex);
-    
-    int actualDuration = longSustainMode ? 200 : 2000; // Use longer duration if sustain mode is on
-    
-    // Create a new audio system for this sound
-    int channelId = nextChannelId++;
-    AudioSystem* audioSystem = new AudioSystem();
-    
-    if (!audioSystem->Initialize()) {
-        delete audioSystem;
-        std::cerr << "Failed to initialize audio system for channel " << channelId << std::endl;
-        return;
-    }
-    
-    // Store the channel
-    audioChannels[channelId] = audioSystem;
-    
-    // Configure and play the sound
-    audioSystem->SetFrequency(frequency);
-    
-    // Start a new thread to play the sound and clean up when done
-    std::thread([channelId, audioSystem, actualDuration]() {
-        audioSystem->PlaySound();
-        SDL_Delay(actualDuration);
-        audioSystem->StopSound();
-        
-        // Clean up after sound finishes
-        std::lock_guard<std::mutex> cleanupLock(channelsMutex);
-        if (audioChannels.find(channelId) != audioChannels.end()) {
-            delete audioSystem;
-            audioChannels.erase(channelId);
-        }
-    }).detach();
-}
-
-// Function to toggle sustain mode
-void ToggleSustainMode() {
-    longSustainMode = !longSustainMode;
-    std::cout << "Piano sustain mode: " << (longSustainMode ? "ON" : "OFF") << std::endl;
-}
-
-// Function to stop all playing sounds
-void StopAllSounds() {
-    std::lock_guard<std::mutex> lock(channelsMutex);
-    for (auto& [channelId, system] : audioChannels) {
-        system->StopSound();
-    }
-}
-
 // Fixed synchronous version with multiple wave components
 void PlaySimpleSound() {
-    AudioSystem audioSystem;
-    
-    if (audioSystem.Initialize()) {
-        SDL_Log("Playing a complex sound...");
-        
-        // Clear any existing waves
-        audioSystem.ClearWaveComponents();
-        
-        // Add multiple wave components to create a richer sound
-        audioSystem.AddWaveComponent(WaveType::Sine, 82.0f, 0.3f);        // Base frequency
-        audioSystem.AddWaveComponent(WaveType::Sine, 164.0f, 0.15f);      // First harmonic (2x)
-        audioSystem.AddWaveComponent(WaveType::Triangle, 123.0f, 0.8f);  // Add some complexity
-        
-        // Generate the complex wave from the components
-        audioSystem.GenerateComplexWave();
-        
-        // Play the sound
-        audioSystem.PlaySound();
-        SDL_Delay(1000);
-        
-        audioSystem.StopSound();
+    // Use the mixer to play a simple sound instead
+    if (gAudioMixer == nullptr) {
+        InitializeAudioMixer();
     }
+    
+    // Create a sample called "simpleSound"
+    gAudioMixer->AddSample("simpleSound", WaveType::Sine, 82.0f, 0.3f);
+    gAudioMixer->AddSample("simpleSound", WaveType::Sine, 164.0f, 0.15f);
+    gAudioMixer->AddSample("simpleSound", WaveType::Triangle, 123.0f, 0.8f);
+    
+    // Play the sample
+    gAudioMixer->PlaySample("simpleSound", 1000);
+}
+
+// Global piano functionality functions that are referenced in keyboard.hpp
+void PlaySimpleSoundAsync(int durationMs, float frequency) {
+    // Use the mixer to play a simple sound with the given frequency
+    if (gAudioMixer == nullptr) {
+        InitializeAudioMixer();
+    }
+    
+    // Play the sound with the given frequency and duration
+    gAudioMixer->PlaySound(frequency, durationMs);
+    std::cout << "Playing simple sound async: " << frequency << "Hz for " << durationMs << "ms" << std::endl;
+}
+
+void ToggleSustainMode() {
+    // Use the mixer to toggle sustain mode
+    if (gAudioMixer == nullptr) {
+        InitializeAudioMixer();
+    }
+    
+    gAudioMixer->ToggleSustainMode();
+}
+
+void StopAllSounds() {
+    // Use the mixer to stop all sounds
+    if (gAudioMixer == nullptr) {
+        InitializeAudioMixer();
+    }
+    
+    gAudioMixer->StopAllSounds();
+    std::cout << "All sounds stopped" << std::endl;
 }
