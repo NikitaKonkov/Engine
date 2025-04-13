@@ -18,6 +18,7 @@ A modern C++ game engine built with SDL3 and Vulkan, providing a flexible founda
 - 🚀 **Vulkan Rendering Backend** - Modern graphics API for optimal performance
 - ⚙️ **Advanced Input System** - Flexible keyboard/mouse/gamepad handling with action mapping
 - 🔊 **Basic Audio Engine** - Simple sound playback functionality
+- 🎹 **Piano System** - Interactive keyboard piano with customizable notes and sustain mode
 - 📁 **Settings Management** - File-based configuration with automatic persistence
 - 💻 **CPU Optimization** - Optional AVX2/AVX512 instruction set utilization
 - 🛠️ **Cross-Platform** - CMake build system for Windows and Linux (coming soon)
@@ -101,12 +102,16 @@ cmake -DUSE_AVX512=ON -DPRODUCTION_BUILD=ON ..
 ├── Engine/                     # Core engine code
 │   ├── include/                # Header files
 │   │   ├── app/               # Main application components
+│   │   ├── assets/            # Asset management
+│   │   │   └── piano/         # Piano system
 │   │   ├── audio/             # Audio system 
 │   │   ├── inputs/            # Input handling system
 │   │   ├── renderer/          # Rendering system
 │   │   └── settings/          # Configuration system
 │   ├── src/                    # Source files
 │   │   ├── app/               # Application implementation
+│   │   ├── assets/            # Assets implementation
+│   │   │   └── piano/         # Piano system implementation
 │   │   ├── audio/             # Audio implementation
 │   │   ├── inputs/            # Input system implementation
 │   │   ├── renderer/          # Renderer implementation
@@ -151,6 +156,27 @@ if (Keyboard::Input.isActionPressed("Jump")) {
     // Jump action
 }
 ```
+
+### Piano System
+
+The engine includes an interactive piano system that maps keyboard keys to musical notes:
+
+```cpp
+// Initialize the piano system
+InitializePiano();
+
+// Play a specific note for 1 second
+gPiano->playNote("C4", 1000);
+
+// Toggle sustain mode (longer note duration)
+gPiano->toggleSustainMode();
+
+// Default keyboard mapping:
+// Q -> C4, W -> D4, E -> E4, R -> F4, T -> G4
+// Z -> A4, U -> B4, I -> C5, O -> D5, P -> E5
+```
+
+The piano system is integrated into the main engine loop and automatically handles key events.
 
 ### Graphics Pipeline
 
