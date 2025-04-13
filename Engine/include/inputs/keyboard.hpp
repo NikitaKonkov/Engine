@@ -31,7 +31,7 @@ struct ActionMapping {
 
 class KeyboardManager {
 private:
-    static constexpr size_t MAX_KEY_STATES = 3; // Maximum allowed key states
+    static constexpr size_t MAX_KEY_STATES = 0; // Maximum allowed key states
     std::unordered_map<SDL_Keycode, KeyState> keyStates;
     std::unordered_map<std::string, ActionMapping> actionMappings;
     std::string configFilePath;

@@ -49,7 +49,7 @@ bool App::initialize() {
 
 void App::run() {
     // Initialize the piano system when the app starts running
-    InitializePiano();
+    // InitializePiano();
     
     while (running) {
         processEvents();
@@ -57,15 +57,15 @@ void App::run() {
         update();
         
         // Piano update - this will handle any piano-specific updates
-        if (gPiano) {
-            gPiano->update();
-        }
+        // if (gPiano) {
+        //     gPiano->update();
+        // }
         
         render();
     }
     
     // Shutdown the piano system when the app stops running
-    ShutdownPiano();
+    // ShutdownPiano();
 }
 
 void App::processEvents() {
