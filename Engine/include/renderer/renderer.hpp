@@ -14,6 +14,9 @@ public:
     
     // Draw a frame
     void drawFrame();
+    
+    // Handle window resize events
+    void handleWindowResize(int width, int height);
 
 private:
     // Window handle

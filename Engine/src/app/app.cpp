@@ -49,12 +49,17 @@ bool App::initialize() {
 
 void App::run() {
     while (running) {
+        
         processEvents();
+        
         update();
         render();
+
+        
         
     }
 }
+
 
 void App::processEvents() {
     SDL_Event event;
@@ -62,15 +67,27 @@ void App::processEvents() {
         if (event.type == SDL_EVENT_QUIT) {
             running = false;
         }
-        
         // Handle window events
-        if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            // Handle window resizing if needed
-            // In a more complete implementation, you would recreate the swapchain here
+        else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+            // Get the new window size
+            int newWidth, newHeight;
+            SDL_GetWindowSizeInPixels(window, &newWidth, &newHeight);
+            
+            // Update the stored dimensions
+            width = newWidth;
+            height = newHeight;
+            
+            // Let the renderer know about the resize
+            if (renderer) {
+                renderer->handleWindowResize(width, height);
+            }
         }
         
         // Process keyboard input through your input system
-        Keyboard::Input.handleEvent(event);
+        // Only pass relevant keyboard events to the keyboard manager
+        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+            Keyboard::Input.handleEvent(event);
+        }
     }
 }
 

@@ -109,7 +109,7 @@ void PlaySimpleSound() {
         audioSystem.PlaySound();
         
         // Play for 2 seconds
-        SDL_Delay(2000);
+        SDL_Delay(100);
         
         audioSystem.StopSound();
     }

@@ -6,8 +6,8 @@
 #include <iostream>
 
 struct Settings {
-    int screenWidth     = 800;      // screen width
-    int screenHeight    = 600;      // screen height
+    int screenWidth     = 1920;      // screen width
+    int screenHeight    = 1080;      // screen height
     bool fullscreen     = false;    // fullscreen mode
     bool vsync          = true;     // vertical sync
     int maxFPS          = 60;       // maximum frames per second

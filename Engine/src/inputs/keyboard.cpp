@@ -67,8 +67,34 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
     if (event.type == SDL_EVENT_KEY_DOWN) {
         SDL_Keycode key = event.key.key;
         
+        // Check if this is a new key and we're at the limit
+        if (keyStates.find(key) == keyStates.end() && keyStates.size() >= MAX_KEY_STATES) {
+            // Remove a key that's in RELEASED state (prioritize those)
+            bool removed = false;
+            for (auto it = keyStates.begin(); it != keyStates.end(); ) {
+                if (it->second == KeyState::RELEASED) {
+                    SDL_Log("Removing old released key: %s to make room for: %s", 
+                           keycodeToString(it->first).c_str(), keycodeToString(key).c_str());
+                    it = keyStates.erase(it);
+                    removed = true;
+                    break;
+                } else {
+                    ++it;
+                }
+            }
+            
+            // If no RELEASED keys, remove the first key (oldest)
+            if (!removed && !keyStates.empty()) {
+                auto it = keyStates.begin();
+                SDL_Log("Removing oldest key: %s to make room for: %s", 
+                       keycodeToString(it->first).c_str(), keycodeToString(key).c_str());
+                keyStates.erase(it);
+            }
+        }
+        
         // Update state
-        if (keyStates[key] == KeyState::RELEASED || 
+        if (keyStates.find(key) == keyStates.end() || 
+            keyStates[key] == KeyState::RELEASED || 
             keyStates[key] == KeyState::JUST_RELEASED) {
             keyStates[key] = KeyState::JUST_PRESSED;
             
@@ -85,9 +111,35 @@ void KeyboardManager::handleEvent(const SDL_Event& event) {
     else if (event.type == SDL_EVENT_KEY_UP) {
         SDL_Keycode key = event.key.key;
         
+        // Check if this is a new key and we're at the limit
+        if (keyStates.find(key) == keyStates.end() && keyStates.size() >= MAX_KEY_STATES) {
+            // Remove a key that's in RELEASED state (prioritize those)
+            bool removed = false;
+            for (auto it = keyStates.begin(); it != keyStates.end(); ) {
+                if (it->second == KeyState::RELEASED) {
+                    SDL_Log("Removing old released key: %s to make room for: %s", 
+                           keycodeToString(it->first).c_str(), keycodeToString(key).c_str());
+                    it = keyStates.erase(it);
+                    removed = true;
+                    break;
+                } else {
+                    ++it;
+                }
+            }
+            
+            // If no RELEASED keys, remove the first key (oldest)
+            if (!removed && !keyStates.empty()) {
+                auto it = keyStates.begin();
+                SDL_Log("Removing oldest key: %s to make room for: %s", 
+                       keycodeToString(it->first).c_str(), keycodeToString(key).c_str());
+                keyStates.erase(it);
+            }
+        }
+        
         // Update state
-        if (keyStates[key] == KeyState::PRESSED || 
-            keyStates[key] == KeyState::JUST_PRESSED) {
+        if (keyStates.find(key) != keyStates.end() &&
+           (keyStates[key] == KeyState::PRESSED || 
+            keyStates[key] == KeyState::JUST_PRESSED)) {
             keyStates[key] = KeyState::JUST_RELEASED;
             
             // Trigger callbacks for actions mapped to this key
@@ -151,6 +203,17 @@ bool KeyboardManager::isKeyJustReleased(SDL_Keycode keyCode) const {
 }
 
 bool KeyboardManager::mapAction(const std::string& actionName, SDL_Keycode primaryKey, SDL_Keycode alternateKey) {
+    // Check if we're at the limit for action mappings and this is a new action
+    if (actionMappings.find(actionName) == actionMappings.end() && actionMappings.size() >= MAX_KEY_STATES) {
+        // Remove the first action mapping to make room
+        if (!actionMappings.empty()) {
+            auto it = actionMappings.begin();
+            SDL_Log("Removing old action mapping: %s to make room for: %s", 
+                   it->first.c_str(), actionName.c_str());
+            actionMappings.erase(it);
+        }
+    }
+
     actionMappings[actionName] = ActionMapping{
         actionName,
         primaryKey,

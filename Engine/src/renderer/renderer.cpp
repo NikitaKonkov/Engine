@@ -471,3 +471,33 @@ void Renderer::cleanup() {
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
 }
+
+void Renderer::handleWindowResize(int width, int height) {
+    // Wait until the device is idle before recreating resources
+    vkDeviceWaitIdle(device);
+    
+    // Clean up existing swap chain resources
+    for (auto framebuffer : swapChainFramebuffers) {
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
+    swapChainFramebuffers.clear();
+    
+    for (auto imageView : swapChainImageViews) {
+        vkDestroyImageView(device, imageView, nullptr);
+    }
+    swapChainImageViews.clear();
+    
+    // Destroy old swap chain
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
+    
+    // Recreate the swap chain with the new window dimensions
+    createSwapChain();
+    createImageViews();
+    createFramebuffers();
+    
+    // Re-record command buffers if needed
+    vkResetCommandPool(device, commandPool, 0);
+    
+    // Log the resize event
+    SDL_Log("Window resized to %dx%d", width, height);
+}
