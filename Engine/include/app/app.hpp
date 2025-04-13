@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <renderer/renderer.hpp>
+#include <assets/piano/piano.hpp> // Added piano include
 
 class App {
 public:

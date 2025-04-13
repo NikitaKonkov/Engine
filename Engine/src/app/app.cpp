@@ -48,18 +48,25 @@ bool App::initialize() {
 }
 
 void App::run() {
+    // Initialize the piano system when the app starts running
+    InitializePiano();
+    
     while (running) {
-        
         processEvents();
         
         update();
+        
+        // Piano update - this will handle any piano-specific updates
+        if (gPiano) {
+            gPiano->update();
+        }
+        
         render();
-
-        
-        
     }
+    
+    // Shutdown the piano system when the app stops running
+    ShutdownPiano();
 }
-
 
 void App::processEvents() {
     SDL_Event event;
@@ -86,7 +93,13 @@ void App::processEvents() {
         // Process keyboard input through your input system
         // Only pass relevant keyboard events to the keyboard manager
         if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+            // Send events to the generic keyboard manager
             Keyboard::Input.handleEvent(event);
+            
+            // Also send them to the piano system
+            if (gPiano) {
+                gPiano->handleKeyEvent(event);
+            }
         }
     }
 }
