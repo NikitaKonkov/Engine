@@ -9,9 +9,8 @@
 
 A modern C++ game engine built with SDL3 and Vulkan, providing a flexible foundation for game development with optimized performance. Designed to leverage modern hardware capabilities while maintaining an intuitive API for game developers.
 
-<p align="center">
-  <img src="https://via.placeholder.com/800x400?text=Engine+Visualization" alt="Engine Visualization" width="600">
-</p>
+<br>
+<br>
 
 ## ✨ Features
 
