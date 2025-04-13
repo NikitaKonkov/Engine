@@ -216,7 +216,7 @@ void PlaySimpleSoundAsync(int durationMs, float frequency) {
     static int nextChannelId = 1;
     std::lock_guard<std::mutex> lock(channelsMutex);
     
-    int actualDuration = longSustainMode ? 500 : durationMs; // Use longer duration if sustain mode is on
+    int actualDuration = longSustainMode ? 200 : 2000; // Use longer duration if sustain mode is on
     
     // Create a new audio system for this sound
     int channelId = nextChannelId++;
