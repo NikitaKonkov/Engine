@@ -5,6 +5,21 @@
 #include <thread>
 #include <atomic>
 
+// Define wave types
+enum class WaveType {
+    Sine,
+    Square,
+    Triangle,
+    Sawtooth
+};
+
+// Structure to define a wave component
+struct WaveComponent {
+    WaveType type;
+    float frequency;
+    float amplitude;
+};
+
 class AudioSystem {
 public:
     AudioSystem();
@@ -15,6 +30,11 @@ public:
     void StopSound();
     void SetFrequency(float freq);
     
+    // New methods for handling multiple waves
+    void AddWaveComponent(WaveType type, float freq, float amplitude);
+    void ClearWaveComponents();
+    void GenerateComplexWave();
+    
     // New asynchronous methods
     void PlaySoundAsync(int durationMs);
     void StopAsyncSound();
@@ -22,6 +42,7 @@ public:
     
 private:
     void GenerateSineWave();
+    float GenerateWaveSample(WaveType type, float phase, float amplitude);
     
     SDL_AudioDeviceID audioDeviceID;
     SDL_AudioStream* audioStream;
@@ -29,6 +50,9 @@ private:
     std::vector<float> sineWaveData;
     int sampleRate;
     float frequency;
+    
+    // For complex waveforms
+    std::vector<WaveComponent> waveComponents;
     
     // For async playback
     std::atomic<bool> isPlaying;

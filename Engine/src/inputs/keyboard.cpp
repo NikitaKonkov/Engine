@@ -163,7 +163,7 @@ void KeyboardManager::update() {
         if (state == KeyState::JUST_PRESSED) {
     
             // Play a sound asynchronously for 1 second
-            PlaySimpleSoundAsync(1000);
+            PlaySimpleSound();
         
             SDL_Log("Key %s JUST_PRESSED", keycodeToString(key).c_str());
             

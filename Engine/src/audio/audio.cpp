@@ -13,7 +13,9 @@
 #endif
 
 AudioSystem::AudioSystem() : audioDeviceID(0), audioStream(nullptr), sampleRate(48000), frequency(440.0f), isPlaying(false) {
-    GenerateSineWave();
+    // Add default sine wave component
+    AddWaveComponent(WaveType::Sine, frequency, 0.2f);
+    GenerateComplexWave();
 }
 
 AudioSystem::~AudioSystem() {
@@ -33,6 +35,63 @@ void AudioSystem::GenerateSineWave() {
     for (int i = 0; i < sampleRate; i++) {
         double time = static_cast<double>(i) / sampleRate;
         sineWaveData[i] = static_cast<float>(sin(2.0 * M_PI * frequency * time)) * 0.2f; // 0.2f for volume control
+    }
+}
+
+float AudioSystem::GenerateWaveSample(WaveType type, float phase, float amplitude) {
+    switch (type) {
+        case WaveType::Sine:
+            return sin(phase) * amplitude;
+        
+        case WaveType::Square:
+            return (sin(phase) > 0 ? 1.0f : -1.0f) * amplitude;
+            
+        case WaveType::Triangle:
+            return (2.0f / M_PI) * asin(sin(phase)) * amplitude;
+            
+        case WaveType::Sawtooth:
+            return (2.0f / M_PI) * atan(tan(phase / 2.0f)) * amplitude;
+            
+        default:
+            return 0.0f;
+    }
+}
+
+void AudioSystem::AddWaveComponent(WaveType type, float freq, float amplitude) {
+    WaveComponent component{type, freq, amplitude};
+    waveComponents.push_back(component);
+}
+
+void AudioSystem::ClearWaveComponents() {
+    waveComponents.clear();
+}
+
+void AudioSystem::GenerateComplexWave() {
+    // If no components are defined, use the basic sine wave
+    if (waveComponents.empty()) {
+        GenerateSineWave();
+        return;
+    }
+    
+    // Generate combined waveform
+    sineWaveData.resize(sampleRate);
+    for (int i = 0; i < sampleRate; i++) {
+        double time = static_cast<double>(i) / sampleRate;
+        float sample = 0.0f;
+        
+        // Sum all wave components
+        for (const auto& comp : waveComponents) {
+            float phase = 2.0f * M_PI * comp.frequency * time;
+            sample += GenerateWaveSample(comp.type, phase, comp.amplitude);
+        }
+        
+        // Normalize to prevent clipping
+        if (!waveComponents.empty()) {
+            float normalizer = 1.0f / waveComponents.size();
+            sample *= normalizer; 
+        }
+        
+        sineWaveData[i] = sample;
     }
 }
 
@@ -98,7 +157,15 @@ void AudioSystem::StopSound() {
 
 void AudioSystem::SetFrequency(float newFreq) {
     frequency = newFreq;
-    GenerateSineWave();
+    
+    // Update the main frequency in the first wave component or add one if empty
+    if (!waveComponents.empty()) {
+        waveComponents[0].frequency = frequency;
+    } else {
+        AddWaveComponent(WaveType::Sine, frequency, 0.2f);
+    }
+    
+    GenerateComplexWave();
     std::cout << "Frequency set to " << frequency << " Hz" << std::endl;
 }
 
@@ -166,18 +233,28 @@ void PlaySimpleSoundAsync(int durationMs = 1000) {
     }
 }
 
-// Original synchronous version
+// Fixed synchronous version with multiple wave components
 void PlaySimpleSound() {
     AudioSystem audioSystem;
     
     if (audioSystem.Initialize()) {
-        std::cout << "Playing a simple sound..." << std::endl;
+        SDL_Log("Playing a complex sound...");
         
-        // Play a basic sound at 440Hz (A4 note)
-        audioSystem.SetFrequency(440.0f);
+        // Clear any existing waves
+        audioSystem.ClearWaveComponents();
+        
+        // Add multiple wave components to create a richer sound
+        audioSystem.AddWaveComponent(WaveType::Sine, 82.0f, 0.3f);        // Base frequency
+        audioSystem.AddWaveComponent(WaveType::Sine, 164.0f, 0.15f);      // First harmonic (2x)
+        audioSystem.AddWaveComponent(WaveType::Triangle, 123.0f, 0.8f);  // Add some complexity
+        
+        // Generate the complex wave from the components
+        audioSystem.GenerateComplexWave();
+        
+        // Play the sound
         audioSystem.PlaySound();
         SDL_Delay(1000);
-        // Play for 2 seconds
+        
         audioSystem.StopSound();
     }
 }
