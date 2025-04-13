@@ -4,6 +4,15 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <vector>
+#include <chrono>
+
+// Record entry structure to store note information
+struct NoteRecord {
+    std::string note;
+    int duration;
+    uint64_t timestamp;
+};
 
 class Piano {
 public:
@@ -27,6 +36,14 @@ public:
     // Check if sustain mode is enabled
     bool isSustainModeEnabled() const;
 
+    // Recording functionality
+    void startRecording();
+    void stopRecording();
+    void saveRecording();
+    void playRecording();
+    bool isRecording() const;
+    bool isPlaying() const;
+
 private:
     // Map of notes to their frequencies
     std::map<std::string, float> noteFrequencies;
@@ -36,6 +53,13 @@ private:
     
     // Maps SDL keycodes to note names
     std::map<SDL_Keycode, std::string> keyToNoteMap;
+    
+    // Recording data
+    std::vector<NoteRecord> recordedNotes;
+    bool recording;
+    bool playing;
+    uint64_t recordStartTime;
+    size_t playbackIndex;
     
     // Initialize the note to frequency mappings
     void initializeNoteFrequencies();
