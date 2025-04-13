@@ -61,4 +61,4 @@ private:
 
 // Helper functions for simpler usage
 void PlaySimpleSound();
-void PlaySimpleSoundAsync(int durationMs);
+void PlaySimpleSoundAsync(int durationMs, float frequency);

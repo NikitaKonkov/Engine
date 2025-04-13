@@ -207,7 +207,7 @@ void AudioSystem::StopAsyncSound() {
 }
 
 // Example function to play a simple sound asynchronously
-void PlaySimpleSoundAsync(int durationMs = 1000) {
+void PlaySimpleSoundAsync(int durationMs, float frequency) {
     static AudioSystem* audioSystem = nullptr;
     static std::mutex audioMutex;
     
@@ -226,7 +226,7 @@ void PlaySimpleSoundAsync(int durationMs = 1000) {
     
     // Only play if no sound is currently playing
     if (!audioSystem->IsPlaying()) {
-        audioSystem->SetFrequency(440.0f);
+        audioSystem->SetFrequency(frequency);
         audioSystem->PlaySoundAsync(durationMs);
     } else {
         std::cout << "Sound is already playing. Wait for it to finish." << std::endl;
